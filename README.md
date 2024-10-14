@@ -8,3 +8,6 @@ The Real-Time Location Tracker leverages Socket.IO for instant, two-way communic
 
 ![output1](img/1.PNG)
 
+when two connections are found 
+
+![output2](img/2.PNG)
