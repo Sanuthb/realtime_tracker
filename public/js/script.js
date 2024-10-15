@@ -1,10 +1,12 @@
 const socket = io()
-
+var yourlat;
+var yourlng;
 if(navigator.geolocation){
     navigator.geolocation.watchPosition((position)=>{
         const {latitude, longitude} = position.coords
+        yourlat = latitude
+        yourlng = longitude
         socket.emit('send-location', {latitude, longitude})
-        console.log(`Your current location: ${latitude}, ${longitude}`)
     },
     (error)=>{
         console.log(error)
@@ -29,7 +31,8 @@ socket.on("receive-location",(data)=>{
     const {id,latitude, longitude} = data
     map.setView([latitude,longitude],16)
     if(markers[id]){
-        markers[id].setLatLng([latitude,longitude])
+        markers[id].setLatLng([latitude,longitude]).bindPopup(`${latitude},${longitude}`).openPopup()
+
     }else{
         markers[id] = L.marker([latitude,longitude]).addTo(map)
     }
@@ -40,5 +43,23 @@ socket.on('user-disconnected',(id)=>{
         map.removeLayer(markers[id])
         delete markers[id]
     }
+})
+var secondmarker;
+var routings;
+map.on("click",function(e){
+    if (secondmarker) {
+        map.removeLayer(secondmarker);
+    }
+    if(routings){
+        map.removeControl(routings);
+    }
+    secondmarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map)
+
+    routings=L.Routing.control({
+        waypoints: [
+          L.latLng(yourlat,yourlng),
+          L.latLng(e.latlng.lat, e.latlng.lng)
+        ]
+      }).addTo(map);
 })
 
